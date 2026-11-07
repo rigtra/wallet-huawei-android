@@ -76,3 +76,4 @@ fun renderCode(value: String, isBarcode: Boolean, width: Int, height: Int): Bitm
     }
     return Bitmap.createBitmap(px, matrix.width, matrix.height, Bitmap.Config.ARGB_8888)
 }
+

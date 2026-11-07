@@ -11,7 +11,19 @@ data class MembershipCard(
     val codeType: String,
     val codeValue: String,
     val styleId: String = DEFAULT_STYLE_ID,
+    /** Pinned cards always stay at the top of the wallet. */
+    val pinned: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis(),
+    /** Last time the code was opened; recent cards float to the top on the next launch. */
+    val lastUsedAt: Long = System.currentTimeMillis(),
+    /** False until the watch confirms it received the latest version of this card. */
+    val synced: Boolean = false,
 ) {
+    /** Fields the watch cares about. A sync only counts if these didn't change mid-flight. */
+    fun sameContentAs(other: MembershipCard): Boolean =
+        merchantName == other.merchantName && codeType == other.codeType &&
+            codeValue == other.codeValue && styleId == other.styleId
+
     val isBarcode: Boolean get() = codeType.lowercase().contains("barcode")
     val style: CardStyle get() = styleFor(styleId)
 }

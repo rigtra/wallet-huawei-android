@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -15,10 +16,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import com.ipandai.edompet.data.CardStyle
 import com.ipandai.edompet.data.cardStyles
 
@@ -44,26 +48,29 @@ fun colorFromHex(hex: String): Color {
 fun CardStylePicker(selectedId: String, onSelect: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            "Card Background Color",
-            style = MaterialTheme.typography.labelMedium,
+            "Card color",
+            style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             items(cardStyles) { style ->
                 val selected = style.id == selectedId
-                // Selection ring sits OUTSIDE the swatch with a gap, so the swatch itself is never
-                // clipped or stroked differently. border(0.dp) used to draw a clipped hairline,
-                // which made unselected outlines look uneven.
-                androidx.compose.foundation.layout.Box(
+                // 48dp touch target. The selection ring sits OUTSIDE the swatch with a gap so the
+                // swatch itself is never clipped or stroked differently.
+                Box(
                     Modifier
-                        .size(42.dp)
+                        .size(48.dp)
                         .clip(CircleShape)
+                        .semantics {
+                            contentDescription = style.name
+                            this.selected = selected
+                        }
                         .then(
                             if (selected) Modifier.border(2.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
                             else Modifier
                         )
-                        .clickable { onSelect(style.id) }
-                        .padding(5.dp)
+                        .clickable(role = Role.RadioButton) { onSelect(style.id) }
+                        .padding(6.dp)
                         .background(style.brush(), CircleShape)
                         // Same thin outline on every swatch so dark ones stay visible on black
                         .border(1.dp, Color.White.copy(alpha = 0.18f), CircleShape)

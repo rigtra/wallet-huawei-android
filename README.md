@@ -16,8 +16,10 @@ through **Huawei Wear Engine**.
 | `WearEngineManager.swift`             | `wear/WearEngineManager.kt`               |
 
 The JSON sent to the watch keeps the iOS keys (`merchantName`, `codeType`, `codeValue`,
-`backgroundColor`), so an existing watch app keeps working. It also adds `gradientColors`
-(`[top, bottom]` hex) and `textColor`, which a watch app can use to draw the gradient card.
+`backgroundColor`), so an existing watch app keeps working. It also adds `id`, `action`
+(`"upsert"`, or `"delete"` with just an `id`), `gradientColors` (`[top, bottom]` hex) and
+`textColor`. Sync is automatic: changes are queued and sent one at a time whenever the watch is
+connected, and pending work survives app restarts.
 
 Card backgrounds are 12 two-stop gradients taken from the "color gradient" palettes. They are
 ordered by the rainbow (red, orange, yellow, green, blue, indigo, violet), then pink, maroon and
@@ -27,6 +29,11 @@ black. Each preset has a fixed text color, checked against WCAG contrast. See `C
 New in this version: a **Show code** button on an expanded card shows a large QR code or barcode
 for the cashier. **Add & Send to Watch** now also sends the card to the watch (on iOS it only
 saved it).
+
+## Build output
+Build output goes to `build.nosync/` instead of `build/`. `~/Documents` is synced by iCloud Drive,
+which creates "BuildConfig 2.java"-style conflict copies inside `build/`, and those break the build.
+iCloud skips folders whose names end in `.nosync`.
 
 ## Open & run
 1. Open the `android/` folder in **Android Studio** (Ladybug or newer). It downloads Gradle 8.11.1,
