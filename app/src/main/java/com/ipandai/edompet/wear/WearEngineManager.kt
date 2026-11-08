@@ -162,13 +162,14 @@ class WearEngineManager(private val activity: Activity) {
 
     companion object {
         /** Bundle name of the app running ON THE WATCH. */
-        const val WATCH_PKG_NAME = "com.ipandai.edompet"
+        const val WATCH_PKG_NAME = "com.ipandai.edompet.watch"
 
         /**
-         * Signing fingerprint of the watch app. TODO: replace with the value from your watch
-         * app's signing profile in DevEco Studio / AppGallery Connect (format for lite
-         * wearables like GT 4 is usually "<bundleName>_<base64 public key>").
+         * Signing fingerprint of the watch app: "<bundleName>_<base64 public key>", where the key
+         * is the developer (leaf) cert in the AGC debug certificate "edompet-debug".
+         * A release build of the watch app signed with a different cert needs a new value here.
          */
-        const val WATCH_FINGERPRINT = "REPLACE_WITH_WATCH_APP_FINGERPRINT"
+        const val WATCH_FINGERPRINT =
+            "com.ipandai.edompet.watch_MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEjn3SDp8hJ/GwEVaJXSJPT1UAvVCovkD5cqL2ZoyB1zJdDjSEt9skdqmIjW8X4siVGSYqHXJyQ8kQud8jGVZfSA=="
     }
 }

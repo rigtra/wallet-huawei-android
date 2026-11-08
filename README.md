@@ -49,7 +49,7 @@ iCloud skips folders whose names end in `.nosync`.
    ```
    Register the debug keystore for testing and the release keystore for production.
 2. In `wear/WearEngineManager.kt`, set:
-   - `WATCH_PKG_NAME`: the bundle name of the watch app (currently `com.ipandai.edompet`, the same value the iOS app used).
+   - `WATCH_PKG_NAME`: the bundle name of the watch app (`com.ipandai.edompet.watch`; AGC does not allow a HarmonyOS app to reuse the Android package name).
    - `WATCH_FINGERPRINT`: the watch app's signing fingerprint, from DevEco Studio / AppGallery Connect.
 3. The **watch app** (built in DevEco Studio) must be installed on the GT 4 and must listen for P2P
    messages from the phone package `com.ipandai.edompet`.
