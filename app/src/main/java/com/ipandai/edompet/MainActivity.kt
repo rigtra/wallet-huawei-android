@@ -14,18 +14,17 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CreditCard
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.CreditCard
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -41,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -53,6 +53,9 @@ import com.ipandai.edompet.scan.DecodedCode
 import com.ipandai.edompet.scan.rememberCodeCapture
 import com.ipandai.edompet.ui.AddSourceSheet
 import com.ipandai.edompet.ui.CardEditorScreen
+import com.ipandai.edompet.ui.GLASS_BAR_HEIGHT
+import com.ipandai.edompet.ui.GLASS_BAR_MARGIN
+import com.ipandai.edompet.ui.GlassBottomBar
 import com.ipandai.edompet.ui.SettingsScreen
 import com.ipandai.edompet.ui.WalletScreen
 import com.ipandai.edompet.ui.WatchStatusSheet
@@ -97,6 +100,8 @@ private fun MainScreen(store: WalletStore, wear: WearEngineManager) {
     var showAddSheet by remember { mutableStateOf(false) }
     var showWatchSheet by remember { mutableStateOf(false) }
     var editor by remember { mutableStateOf<EditorTarget?>(null) }
+    var searching by rememberSaveable { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -124,40 +129,31 @@ private fun MainScreen(store: WalletStore, wear: WearEngineManager) {
         }
     }
 
+    fun closeSearch() { searching = false; query = "" }
+
     BackHandler(openCardId != null && editor == null) { openCardId = null }
+    BackHandler(searching && openCardId == null && editor == null) { closeSearch() }
+
+    val fabVisible = tab == 0 && openCardId == null && !searching && store.cards.isNotEmpty()
+    val barRoom = GLASS_BAR_HEIGHT + GLASS_BAR_MARGIN
 
     Box(Modifier.fillMaxSize()) {
         Scaffold(
             containerColor = Color.Black,
-            snackbarHost = { SnackbarHost(snackbar) },
+            snackbarHost = {
+                // The FAB already sits above the floating bar; without it, lift the snackbar ourselves
+                SnackbarHost(snackbar, Modifier.padding(bottom = if (fabVisible) 0.dp else barRoom))
+            },
             floatingActionButton = {
-                // In the Scaffold slot so the snackbar pushes it up instead of covering it
-                AnimatedVisibility(
-                    tab == 0 && openCardId == null && store.cards.isNotEmpty(),
-                    enter = fadeIn(), exit = fadeOut(),
-                ) {
+                // In the Scaffold slot so the snackbar pushes it up instead of covering it.
+                // Padded so it floats just above the glass bar.
+                AnimatedVisibility(fabVisible, enter = fadeIn(), exit = fadeOut()) {
                     ExtendedFloatingActionButton(
                         onClick = { showAddSheet = true },
                         icon = { Icon(Icons.Filled.Add, null) },
                         text = { Text("Add card") },
+                        modifier = Modifier.padding(bottom = barRoom),
                     )
-                }
-            },
-            bottomBar = {
-                // Hidden while a code is on screen: nothing should compete with it at checkout
-                AnimatedVisibility(openCardId == null, enter = fadeIn(), exit = fadeOut()) {
-                    NavigationBar {
-                        NavigationBarItem(
-                            selected = tab == 0, onClick = { tab = 0 },
-                            icon = { Icon(if (tab == 0) Icons.Filled.CreditCard else Icons.Outlined.CreditCard, null) },
-                            label = { Text("Wallet") },
-                        )
-                        NavigationBarItem(
-                            selected = tab == 1, onClick = { tab = 1 },
-                            icon = { Icon(if (tab == 1) Icons.Filled.Settings else Icons.Outlined.Settings, null) },
-                            label = { Text("Settings") },
-                        )
-                    }
                 }
             },
         ) { padding ->
@@ -165,6 +161,7 @@ private fun MainScreen(store: WalletStore, wear: WearEngineManager) {
                 when (tab) {
                     0 -> WalletScreen(
                         cards = store.cards,
+                        query = if (searching) query else "",
                         openCardId = openCardId,
                         wear = wear,
                         onOpen = { id -> store.markUsed(id); openCardId = id },
@@ -189,6 +186,29 @@ private fun MainScreen(store: WalletStore, wear: WearEngineManager) {
                     )
                 }
             }
+        }
+
+        // Floating glass bar over the content. Hidden while a code is on screen: nothing should
+        // compete with it at checkout. The search field rides up with the keyboard.
+        AnimatedVisibility(
+            visible = openCardId == null,
+            enter = fadeIn() + slideInVertically { it / 2 },
+            exit = fadeOut() + slideOutVertically { it / 2 },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                // Union, not both: the IME inset already covers the nav bar when the keyboard is up
+                .windowInsetsPadding(WindowInsets.navigationBars.union(WindowInsets.ime))
+                .padding(start = 16.dp, end = 16.dp, bottom = GLASS_BAR_MARGIN),
+        ) {
+            GlassBottomBar(
+                tab = tab,
+                onTabSelected = { tab = it },
+                searching = searching,
+                query = query,
+                onQueryChange = { query = it },
+                onSearchOpen = { tab = 0; searching = true },
+                onSearchClose = ::closeSearch,
+            )
         }
 
         // Full-screen editor slides up over everything, including the bottom bar
