@@ -1,6 +1,6 @@
 # eDompet: Android
 
-Android port (Kotlin + Jetpack Compose) of the iOS `Loyalty iOS` app. It keeps membership
+Android port (Kotlin + Jetpack Compose) of the iOS `eDompet` app. It keeps membership
 QR codes and barcodes in a wallet-style stack and syncs them to a Huawei watch (e.g. Watch GT 4)
 through **Huawei Wear Engine**.
 
