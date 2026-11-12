@@ -6,7 +6,7 @@ through **Huawei Wear Engine**.
 
 | iOS (Swift)                           | Android (Kotlin)                          |
 |---------------------------------------|-------------------------------------------|
-| `ContentView` / `TabView`             | `MainActivity` + `NavigationBar`          |
+| `ContentView` / `TabView`             | `MainActivity` + `ui/GlassNavBar.kt`     |
 | `AppleWalletView`, `WalletCardView`   | `ui/WalletScreen.kt`                      |
 | `AddCardView`                         | `ui/AddCardScreen.kt`                     |
 | `EditCardSheet`                       | `ui/EditCardSheet.kt` (bottom sheet)      |
@@ -29,6 +29,11 @@ black. Each preset has a fixed text color, checked against WCAG contrast. See `C
 New in this version: a **Show code** button on an expanded card shows a large QR code or barcode
 for the cashier. **Add & Send to Watch** now also sends the card to the watch (on iOS it only
 saved it).
+
+Navigation is a floating glass bar (`ui/GlassNavBar.kt`): a rounded pill with the tabs (the
+selected tab shows its label) and a round search button. Search filters the wallet by merchant
+name **or** code number. Name matches rank first, and codes match even when you leave out the
+spaces or dashes printed on the card. See `data/CardSearch.kt`.
 
 ## Build output
 Build output goes to `build.nosync/` instead of `build/`. `~/Documents` is synced by iCloud Drive,
